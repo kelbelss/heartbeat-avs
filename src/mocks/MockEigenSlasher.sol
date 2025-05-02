@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.29;
 
-import "./interfaces/IEigenLayerSlasher.sol";
+import "../interfaces/IEigenLayerSlasher.sol";
 
 contract MockEigenSlasher is IEigenLayerSlasher {
     event MockSlashed(address operator);
