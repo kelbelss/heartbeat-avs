@@ -38,4 +38,9 @@ contract HeartbeatAVS {
         eigenlayerSlasher.slash(operator);
         emit Slashed(operator, last);
     }
+
+    // helper functions for testing
+    function registerOperator(address operator) external {
+        isRegisteredOperator[operator] = true;
+    }
 }
