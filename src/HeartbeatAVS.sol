@@ -43,4 +43,8 @@ contract HeartbeatAVS {
     function registerOperator(address operator) external {
         isRegisteredOperator[operator] = true;
     }
+
+    function getLastPing(address operator) external view returns (uint256) {
+        return lastPing[operator];
+    }
 }
