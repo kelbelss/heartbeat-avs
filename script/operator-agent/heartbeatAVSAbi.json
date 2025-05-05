@@ -1,103 +1,152 @@
 [
   {
+    "type": "constructor",
     "inputs": [
-      { "internalType": "address", "name": "slasher", "type": "address" }
+      { "name": "slasher", "type": "address", "internalType": "address" }
     ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
+    "stateMutability": "nonpayable"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "operator", "type": "address" }
+    "type": "function",
+    "name": "eigenlayerSlasher",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IEigenLayerSlasher"
+      }
     ],
-    "name": "slash",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "stateMutability": "view"
   },
   {
-    "inputs": [
-      { "internalType": "string", "name": "statusMessage", "type": "string" }
-    ],
-    "name": "ping",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "name": "getGracePeriod",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "operator", "type": "address" }
-    ],
-    "name": "registerOperator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "function",
+    "name": "getInterval",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "operator", "type": "address" }
-    ],
-    "name": "lastPing",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "type": "function",
     "name": "getLastPing",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
+    "inputs": [
+      { "name": "operator", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "type": "function",
+    "name": "gracePeriod",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "interval",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "isRegisteredOperator",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
   },
   {
-    "anonymous": false,
+    "type": "function",
+    "name": "lastPing",
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ping",
     "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "operator",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "message",
-        "type": "string"
-      }
+      { "name": "statusMessage", "type": "string", "internalType": "string" }
     ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerOperator",
+    "inputs": [
+      { "name": "operator", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "slash",
+    "inputs": [
+      { "name": "operator", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
     "name": "Pinged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
         "name": "operator",
-        "type": "address"
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
       },
       {
+        "name": "timestamp",
+        "type": "uint256",
         "indexed": false,
-        "internalType": "uint256",
-        "name": "missedAt",
-        "type": "uint256"
+        "internalType": "uint256"
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "Slashed",
-    "type": "event"
-  }
+    "inputs": [
+      {
+        "name": "operator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "missedAt",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "InvalidSlash",
+    "inputs": [
+      { "name": "expected", "type": "uint256", "internalType": "uint256" }
+    ]
+  },
+  { "type": "error", "name": "NotAnOperator", "inputs": [] }
 ]
