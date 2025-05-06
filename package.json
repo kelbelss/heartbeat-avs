@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "ping": "node --loader ts-node/esm script/operator-agent/pingAgent.ts",
-    "bot": "tsx script/operator-agent/telegramBot.ts"
+    "bot": "node --loader ts-node/esm script/operator-agent/telegramBot.ts"
   },
   "dependencies": {
     "dotenv": "^16.5.0",
