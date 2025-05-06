@@ -11,10 +11,12 @@ contract HeartbeatAVS {
     uint256 public gracePeriod = 10; // grace time before slashing allowed
 
     mapping(address => bool) public isRegisteredOperator; // basic allowlist
+    mapping(address => uint8) public penaltyCount; // operator to # of penalties
 
     // events
     event Pinged(address indexed operator, uint256 timestamp, string message);
     event Slashed(address indexed operator, uint256 missedAt);
+    event Deregistered(address indexed operator);
 
     // errors
     error NotAnOperator();
@@ -31,20 +33,37 @@ contract HeartbeatAVS {
     }
 
     function slash(address operator) external {
+        require(isRegisteredOperator[operator], NotAnOperator());
         uint256 last = lastPing[operator];
         require(block.timestamp > last + interval + gracePeriod, InvalidSlash(last + interval + gracePeriod));
 
-        // Pseudo-call to EigenLayer slashing hook
+        penaltyCount[operator] += 1;
+
+        // mock-call to EigenLayer slashing contract
         eigenlayerSlasher.slash(operator);
+
         emit Slashed(operator, last);
+
+        // deregister an operator after 3 penalties
+        if (penaltyCount[operator] >= 3) {
+            isRegisteredOperator[operator] = false;
+            emit Deregistered(operator);
+        }
+
+        // TODO: enforce cool down to avoid multiple slashing for same missed ping
     }
 
     // helper functions for testing
     function registerOperator(address operator) external {
         isRegisteredOperator[operator] = true;
+        penaltyCount[operator] = 0; // reset strikes on (re)registration
     }
 
     function getLastPing(address operator) external view returns (uint256) {
         return lastPing[operator];
+    }
+
+    function getPenaltyCount(address operator) external view returns (uint8) {
+        return penaltyCount[operator];
     }
 }
