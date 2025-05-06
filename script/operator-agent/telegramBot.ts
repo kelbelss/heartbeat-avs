@@ -1,3 +1,5 @@
+// npm run bot
+
 import 'dotenv/config';
 import {
     createPublicClient,    // Client for reading blockchain data (readContract, getBlock)
@@ -399,8 +401,7 @@ async function checkSingleOperator(operator: Address, currentTimestamp: bigint) 
                 await triggerWarning(operator, lastPing, timeSincePing);
             } else if (currentStatus === 'overdue') {
                 // Status changed to 'overdue'. Trigger the slash process.
-                // umcomment this line to enable slashing
-                // await triggerSlash(operator, lastPing, timeSincePing);
+                await triggerSlash(operator, lastPing, timeSincePing);
             } else if (currentStatus === 'healthy' && (previousStatus === 'warning' || previousStatus === 'overdue')) {
                 // Status changed back to 'healthy' from a problematic state. Operator recovered!
                 console.log(`${logPrefix} Operator recovered.`);
@@ -488,98 +489,96 @@ async function triggerWarning(operator: Address, lastPingTime: bigint, timeSince
     await sendTelegramMessage(message);
 }
 
-// /**
-//  * Handles the process of initiating a slash action against an overdue operator.
-//  * Sends pre-slash alert, executes the slash transaction, and sends post-tx confirmation/error.
-//  * @param operator - Address of the operator to be slashed.
-//  * @param lastPingTime - Timestamp of their last successful ping.
-//  * @param timeSincePing - Calculated time since their last successful ping (exceeds deadline).
-//  */
-// async function triggerSlash(operator: Address, lastPingTime: bigint, timeSincePing: bigint) {
-//     const logPrefix = `   SLASH -> Operator ${operator.slice(0, 8)}...:`;
-//     console.error(`${logPrefix} Triggering SLASH action!`);
+/**
+ * Handles the process of initiating a slash action against an overdue operator.
+ * Sends pre-slash alert, executes the slash transaction, and sends post-tx confirmation/error.
+ * @param operator - Address of the operator to be slashed.
+ * @param lastPingTime - Timestamp of their last successful ping.
+ * @param timeSincePing - Calculated time since their last successful ping (exceeds deadline).
+ */
+async function triggerSlash(operator: Address, lastPingTime: bigint, timeSincePing: bigint) {
+    const logPrefix = `   SLASH -> Operator ${operator.slice(0, 8)}...:`;
+    console.error(`${logPrefix} Triggering SLASH action!`);
 
-//     // Calculate the missed deadline for the alert message.
-//     const deadline = contractInterval! + contractGracePeriod!;
-//     const timeAgo = formatTimeAgo(Number(timeSincePing));
+    // Calculate the missed deadline for the alert message.
+    const deadline = contractInterval! + contractGracePeriod!;
+    const timeAgo = formatTimeAgo(Number(timeSincePing));
 
-//     // 1. --- Send Pre-Slash Alert ---
-//     // Notify Telegram *before* sending the transaction.
-//     let preSlashMessage = `🚨 *Initiating Slash!* 🚨\n` +
-//                           `Operator: \`${operator}\`\n` +
-//                           `Last Ping: ${timeAgo} (Timestamp: ${lastPingTime})\n` +
-//                           `Missed Deadline: ${deadline}s (${timeSincePing}s elapsed)\n` +
-//                           `*Sending slash transaction now...*`;
+    // 1. --- Send Pre-Slash Alert ---
+    // Notify Telegram *before* sending the transaction.
+    let preSlashMessage = `🚨 *Initiating Slash!* 🚨\n` +
+                          `Operator: \`${operator}\`\n` +
+                          `Last Ping: ${timeAgo} (Timestamp: ${lastPingTime})\n` +
+                          `Missed Deadline: ${deadline}s (${timeSincePing}s elapsed)\n` +
+                          `*Sending slash transaction now...*`;
 
-//     // Optional AI enhancement for pre-slash alert.
-//     if (openai) {
-//          try {
-//             const aiPrompt = `Generate an urgent and concise Telegram alert (max 35 words). Operator ${operator} is being SLASHED for missing their ping deadline (${deadline}s). Last ping was ${timeAgo}. Slashing transaction is being submitted immediately.`;
-//             const aiMessage = await generateAiMessage(aiPrompt);
-//             preSlashMessage += `\n\n🤖 _${aiMessage}_`;
-//         } catch (aiError) {
-//              console.error(`${logPrefix} Error generating AI pre-slash message:`, aiError);
-//              preSlashMessage += `\n\n_(AI message generation failed)_`;
-//          }
-//     }
-//     await sendTelegramMessage(preSlashMessage);
+    // Optional AI enhancement for pre-slash alert.
+    if (openai) {
+         try {
+            const aiPrompt = `Generate an urgent and concise Telegram alert (max 35 words). Operator ${operator} is being SLASHED for missing their ping deadline (${deadline}s). Last ping was ${timeAgo}. Slashing transaction is being submitted immediately.`;
+            const aiMessage = await generateAiMessage(aiPrompt);
+            preSlashMessage += `\n\n🤖 _${aiMessage}_`;
+        } catch (aiError) {
+             console.error(`${logPrefix} Error generating AI pre-slash message:`, aiError);
+             preSlashMessage += `\n\n_(AI message generation failed)_`;
+         }
+    }
+    await sendTelegramMessage(preSlashMessage);
 
-//     // 2. --- Execute Slash Transaction ---
-//     try {
-//         console.log(`${logPrefix} Sending slash transaction via Wallet Client...`);
-//         // Use the walletClient (configured with slasher's private key) to call writeContract.
-//         const txHash = await walletClient.writeContract({
-//             address: config.contractAddress!, // Target contract
-//             abi: heartbeatAVSAbi,             // Contract ABI
-//             functionName: 'slash',            // Function to call
-//             args: [operator],                 // Arguments for the function
-//             // Optional: Can add gas estimations/limits here if needed, e.g.,
-//             // gas: 100_000n, // Example fixed gas limit
-//         });
-//         console.log(`${logPrefix} Slash transaction successfully sent. Tx Hash: ${txHash}`);
+    // 2. --- Execute Slash Transaction ---
+    try {
+        console.log(`${logPrefix} Sending slash transaction via Wallet Client...`);
+        // Use the walletClient (configured with slasher's private key) to call writeContract.
+        const txHash = await walletClient.writeContract({
+            address: config.contractAddress!, // Target contract
+            abi: heartbeatAVSAbi,             // Contract ABI
+            functionName: 'slash',            // Function to call
+            args: [operator],                 // Arguments for the function
+        });
+        console.log("Attempting to call slash() with operator:", operator);
+        console.log(`${logPrefix} Slash transaction successfully sent. Tx Hash: ${txHash}`);
 
-//         // 3. --- Send Post-Transaction Confirmation Alert ---
-//         // Notify Telegram that the transaction was submitted. Include the hash.
-//         // TODO: Could potentially add a link to a block explorer using the txHash.
-//         await sendTelegramMessage(`✅ Slash Transaction Sent: \`${operator}\`\nTransaction Hash: \`${txHash}\`\n\n_(Blockchain confirmation pending)_`);
+        // 3. --- Send Post-Transaction Confirmation Alert ---
+        // Notify Telegram that the transaction was submitted. Include the hash.
+        // TODO: Could potentially add a link to a block explorer using the txHash.
+        await sendTelegramMessage(`✅ Slash Transaction Sent: \`${operator}\`\nTx: \`${txHash}\`\n\n_(Blockchain confirmation pending)_`);
 
-//         // Optional: Wait for transaction receipt for definitive confirmation.
-//         // This adds delay but confirms the slash was mined successfully (or failed).
-//         /*
-//         console.log(`${logPrefix} Waiting for transaction receipt...`);
-//         try {
-//            const receipt = await publicClient.waitForTransactionReceipt({
-//                hash: txHash,
-//                timeout: 120_000 // Optional timeout (e.g., 2 minutes in ms)
-//            });
-//            console.log(`${logPrefix} Slash transaction CONFIRMED in block ${receipt.blockNumber}. Status: ${receipt.status}`);
-//            if (receipt.status === 'success') {
-//                await sendTelegramMessage(`🎉 Slash Confirmed: \`${operator}\`\nStatus: Success\nBlock: ${receipt.blockNumber}\nTx: \`${txHash}\``);
-//            } else {
-//                await sendTelegramMessage(`⚠️ Slash Reverted: \`${operator}\`\nStatus: Reverted by EVM\nBlock: ${receipt.blockNumber}\nTx: \`${txHash}\``);
-//            }
-//         } catch (receiptError) {
-//            console.error(`${logPrefix} Error or timeout waiting for slash tx receipt:`, receiptError);
-//            await sendTelegramMessage(`⚠️ Slash Tx Status Unknown: \`${operator}\`\nTx: \`${txHash}\`\nError confirming: ${receiptError.message?.substring(0, 100)}...`);
-//         }
-//         */
+        // Optional: Wait for transaction receipt for definitive confirmation.
+        // This adds delay but confirms the slash was mined successfully (or failed).
+        
+        console.log(`${logPrefix} Waiting for transaction receipt...`);
+        try {
+           const receipt = await publicClient.waitForTransactionReceipt({
+               hash: txHash,
+               timeout: 120_000 // Optional timeout (e.g., 2 minutes in ms)
+           });
+           console.log(`${logPrefix} Slash transaction CONFIRMED in block ${receipt.blockNumber}. Status: ${receipt.status}`);
+           if (receipt.status === 'success') {
+               await sendTelegramMessage(`Slash Confirmed: \`${operator}\`\nStatus: Success\nTx: \`${txHash}\``);
+           } else {
+               await sendTelegramMessage(`⚠️ Slash Reverted: \`${operator}\`\nStatus: Reverted by EVM\nBlock: ${receipt.blockNumber}\nTx: \`${txHash}\``);
+           }
+        } catch (receiptError) {
+           console.error(`${logPrefix} Error or timeout waiting for slash tx receipt:`, receiptError);
+        }
+        
 
-//     } catch (error: any) {
-//         // Catch errors during transaction submission (e.g., network error, revert from contract).
-//         console.error(`${logPrefix} ❌ Error sending slash transaction:`, error);
-//         // Try to extract a useful error message from the complex Viem error object.
-//         let errorMessage = error.shortMessage || error.message || "Unknown error occurred.";
-//         // Ensure message isn't overly long for Telegram.
-//         errorMessage = errorMessage.substring(0, 200) + (errorMessage.length > 200 ? '...' : '');
+    } catch (error: any) {
+        // Catch errors during transaction submission (e.g., network error, revert from contract).
+        console.error(`${logPrefix} ❌ Error sending slash transaction:`, error);
+        // Try to extract a useful error message from the complex Viem error object.
+        let errorMessage = error.shortMessage || error.message || "Unknown error occurred.";
+        // Ensure message isn't overly long for Telegram.
+        errorMessage = errorMessage.substring(0, 200) + (errorMessage.length > 200 ? '...' : '');
 
-//         // Send a failure alert to Telegram.
-//         await sendTelegramMessage(`❌ Slash Transaction Failed: \`${operator}\`\nError: ${errorMessage}\n\nCheck bot logs and contract state (e.g., operator might have recovered or been slashed already).`);
-//         // NOTE: We don't reset the operator's status in the cache here.
-//         // If the slash failed because the operator recovered, the next check cycle will update status to 'healthy'.
-//         // If it failed because another slasher was faster, the operator is likely already slashed,
-//         // and subsequent attempts might also fail (which is okay).
-//     }
-// }
+        // Send a failure alert to Telegram.
+        await sendTelegramMessage(`❌ Slash Transaction Failed: \`${operator}\`\nError: ${errorMessage}\n\nCheck bot logs and contract state (e.g., operator might have recovered or been slashed already).`);
+        // NOTE: We don't reset the operator's status in the cache here.
+        // If the slash failed because the operator recovered, the next check cycle will update status to 'healthy'.
+        // If it failed because another slasher was faster, the operator is likely already slashed,
+        // and subsequent attempts might also fail (which is okay).
+    }
+}
 
 
 // -----------------------------------------------------------------------------
