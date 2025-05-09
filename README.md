@@ -5,7 +5,7 @@
 This project combines smart contracts, off-chain agents, and AI-powered messaging to simulate a minimal AVS. It’s designed as a learning project for exploring how to build and test restaking-based infrastructure using tools like EigenLayer and GPT-based agents.
 
 
-## ✨ Key Features
+## Features
 
 | Feature                      | Description                                                       |
 | ---------------------------- | ----------------------------------------------------------------- |
@@ -18,7 +18,7 @@ This project combines smart contracts, off-chain agents, and AI-powered messagin
 ---
 
 
-## 🧠 Project Goal
+## Project Goal
 
 This project simulates the core components of an AVS on EigenLayer:
 
@@ -40,14 +40,14 @@ It serves as a hands-on introduction to AVS design, restaking logic, and integra
 ---
 
 
-## 🤖 Off-Chain Agent (Operator Ping Bot)
+## Off-Chain Agent (Operator Ping Bot)
 
 - Runs every 30 seconds
 - Calls `ping()` with an LLM-generated message
 - Written in TypeScript, runs on Node.js
 
 
-## 📢 Telegram Alert Bot (Slasher Agent)
+## Telegram Alert Bot (Slasher Agent)
 
 Monitors for missed pings and alerts users via Telegram using the Bot API and GPT for explanations.
 
@@ -59,21 +59,13 @@ Example alert:
 The bot can also support `/status` commands for querying operator state.
 
 
-## 🧪 Local Testing (Mock Registry)
+## Local Testing (Mock Registry)
 
-To simulate EigenLayer in development, a simple mock registry is used:
+To simulate EigenLayer at a very basic level in development, a simple mock registry is used:
 
 `mapping(address => bool) public isRegisteredOperator;`
 
 
-## 🧠 Why I Built This
+## Purpose of project
 
-This project helped me explore restaking and AVS design from first principles. Through building it, I:
-
-- Understand core AVS patterns like liveness checks and slashing
-- Learn how to build bots that interact with onchain systems
-- Experiment with permissionless enforcement and observability
-- Integrate LLMs into agent-based infrastructure
-- Simulate real-world uptime validation using event logs and offchain agents
-
-I’m excited to continue building on top of this — especially improving operator analytics, refining the Telegram bot UX, and fully integrating EigenLayer modules.
+This project is purely for learning purposes. I’m excited to continue building on top of this, especially fully integrating EigenLayer modules and essential AVS logic.
