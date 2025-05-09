@@ -66,6 +66,6 @@ To simulate EigenLayer at a very basic level in development, a simple mock regis
 `mapping(address => bool) public isRegisteredOperator;`
 
 
-## Purpose of project
+## Purpose of Project
 
 This project is purely for learning purposes. I’m excited to continue building on top of this, especially fully integrating EigenLayer modules and essential AVS logic.
